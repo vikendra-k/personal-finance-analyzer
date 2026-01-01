@@ -1,42 +1,62 @@
+# ---------- FORCE GUI BACKEND (WINDOWS FIX) ----------
+import matplotlib
+matplotlib.use("TkAgg")
+
+# ---------- IMPORTS ----------
 import sys
-sys.stdout.reconfigure(encoding='utf-8')
-
 import pandas as pd
+import matplotlib.pyplot as plt
 
-# Load expense data
+# ---------- OPTIONAL: FIX CONSOLE ENCODING ----------
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
+# ---------- LOAD DATA ----------
 df = pd.read_csv("data/expenses.csv")
 
-# Clean data
-df['date'] = pd.to_datetime(df['date'])
-df['category'] = df['category'].str.strip().str.title()
-df = df[df['amount'] > 0]
+# ---------- CLEAN DATA ----------
+df["date"] = pd.to_datetime(df["date"])
+df["category"] = df["category"].str.strip().str.title()
+df = df[df["amount"] > 0]
 
-# Total spending
-total_spent = df['amount'].sum()
-print(f"\nTotal money spent: ₹{total_spent}")
+# ---------- ANALYSIS ----------
+total_spent = df["amount"].sum()
+print("\nTotal money spent (INR):", total_spent)
 
-# Spending by category
-category_spending = df.groupby('category')['amount'].sum().sort_values(ascending=False)
+category_spending = (
+    df.groupby("category")["amount"]
+    .sum()
+    .sort_values(ascending=False)
+)
+
 print("\nSpending by category:")
 print(category_spending)
 
-# Percentage contribution
 category_percentage = (category_spending / total_spent) * 100
 print("\nCategory-wise percentage contribution:")
 print(category_percentage.round(2))
 
-# Monthly spending
-df['month'] = df['date'].dt.to_period('M')
-monthly_spending = df.groupby('month')['amount'].sum()
+df["month"] = df["date"].dt.to_period("M")
+monthly_spending = df.groupby("month")["amount"].sum()
+
 print("\nMonthly spending:")
 print(monthly_spending)
 
-# Highest single expense
-max_expense = df.loc[df['amount'].idxmax()]
+max_expense = df.loc[df["amount"].idxmax()]
 print("\nHighest single expense:")
 print(max_expense)
 
-# Observations (fill after running):
-# - Highest spending category:
-# - Month with highest spending:
-# - Largest single expense:
+# ---------- VISUALIZATION ----------
+plt.figure(figsize=(8, 5))
+category_spending.plot(kind="bar")
+plt.title("Spending by Category")
+plt.xlabel("Category")
+plt.ylabel("Amount")
+plt.xticks(rotation=0)
+plt.tight_layout()
+
+plt.show()
+
+
