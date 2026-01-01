@@ -42,10 +42,11 @@ category_spending = (
 
 category_percentage = (category_spending / total_spent) * 100
 
-df["month"] = df["date"].dt.to_period("M")
+# 🔥 CRITICAL FIX (Period → string for PyArrow compatibility)
+df["month"] = df["date"].dt.to_period("M").astype(str)
 monthly_spending = df.groupby("month")["amount"].sum()
 
-max_expense = df.loc[df["amount"].idxmax()]
+max_expense = df.loc[df["amount"].idxmax()].astype(str)
 
 # ---------- OVERVIEW ----------
 if view == "Overview":
@@ -53,10 +54,10 @@ if view == "Overview":
 
     col1, col2 = st.columns(2)
     col1.metric("Total Spent (INR)", f"₹ {total_spent:,.0f}")
-    col2.metric("Highest Single Expense", f"₹ {max_expense['amount']:,.0f}")
+    col2.metric("Highest Single Expense", f"₹ {max_expense['amount']}")
 
     st.subheader("📌 Highest Expense Details")
-    st.write(max_expense)
+    st.dataframe(max_expense.to_frame(name="Value"))
 
 # ---------- CATEGORY ANALYSIS ----------
 elif view == "Category Analysis":
@@ -102,6 +103,7 @@ with st.expander("📂 View Raw Data"):
 # ---------- FOOTER ----------
 st.markdown("---")
 st.caption("Built with Python, Pandas & Streamlit")
+
 
 
 
